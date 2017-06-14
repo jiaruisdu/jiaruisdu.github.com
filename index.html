@@ -106,9 +106,152 @@
 											
 												<p>实验完成中遇到的问题和解决办法：</p>
 												<p>1、初始化。设置不同的位置和RPG值的斜率参数。</p>
+
+<pre><code>
+double slope_start;//扫描线开始的斜率
+double slope_end;//扫描线结束的斜率
+
+int r1, g1, b1, r2, g2, b2, r3, g3, b3;
+
+double slope_start_r, slope_start_g, slope_start_b;
+double slope_end_r, slope_end_g, slope_end_b;//计算三个顶点相关的颜色斜率
+
+int x, y;
+int xs, xe;//扫描线开始和结束处的像素
+
+double dx_start = 0, dx_end = 0;//循环内的斜率变化值，采用加法比乘法快
+
+double dr_start = 0, dg_start = 0, db_start = 0;
+double dr_end = 0, dg_end = 0, db_end = 0;
+
+double rs, re, gs, ge, bs, be;//循环内对每条扫描线的起始和终止颜色倒斜率
+double dr_x, dg_x, db_x;
+double r, g, b;
+double dx; int dy;
+</code></pre>
+										
 												<p>2、判断三角形顶点位置。获取最左上角三角形顶点位置，并按照从宽到窄的方向绘制扫描线。</p>
+
+<pre><code>
+//平顶情况
+if (pt[v1].y == pt[v2].y || pt[v1].y == pt[v3].y)
+{
+	//交换,使pt[v1]点为最左边的顶点
+	if (pt[v1].y == pt[v2].y)
+	{
+		if (pt[v1].x > pt[v2].x)
+			SWAP(v1, v2);
+	}
+	else
+	{
+		if (pt[v1].x > pt[v3].x)
+			SWAP(v1, v3);
+	}
+
+	//交换,使平顶三角形的左上为pt[v1],右上为pt[v3],下顶点为pt[v2]
+	if (pt[v3].y > pt[v2].y)
+		SWAP(v2, v3);
+
+	dy = pt[v2].y - pt[v1].y;
+
+	slope_start = (pt[v2].x - pt[v1].x)*1.0 / dy;//(pt[v2].y-pt[v1].y);
+	slope_end = (pt[v2].x - pt[v3].x)*1.0 / dy;//(pt[v3].y-pt[v2].y);
+
+	GetRGBValue(color[v1], r1, g1, b1);
+	GetRGBValue(color[v2], r2, g2, b2);
+	GetRGBValue(color[v3], r3, g3, b3);
+
+	slope_start_r = (r2 - r1)*1.0 / dy;
+	slope_start_g = (g2 - g1)*1.0 / dy;
+	slope_start_b = (b2 - b1)*1.0 / dy;
+
+	slope_end_r = (r2 - r3)*1.0 / dy;
+	slope_end_g = (g2 - g3)*1.0 / dy;
+	slope_end_b = (b2 - b3)*1.0 / dy;
+}
+</code></pre>
+
+
 												<p>3、绘制扫描线。对三个定点的位置和RPG值进行纵向插值，每次的纵向插值过程中再进行横向插值，使颜色过渡自然。</p>
+<pre><code>
+//循环执行扫描线
+for (y = pt[v1].y; y <= pt[v2].y; y++)
+{
+	xs = Myfloor(pt[v1].x + dx_start);
+	xe = Myceil(pt[v3].x + dx_end);
+
+	rs = r1 + dr_start;
+	re = r3 + dr_end;
+	gs = g1 + dg_start;
+	ge = g3 + dg_end;
+	bs = b1 + db_start;
+	be = b3 + db_end;
+
+	dx = max(xe - xs, 0.0001);//扫描线长度
+	dr_x = (re - rs)*1.0 / dx;
+	dg_x = (ge - gs)*1.0 / dx;
+	db_x = (be - bs)*1.0 / dx;
+
+	r = rs;
+	g = gs;
+	b = bs;
+	//对扫描线的颜色进行横向插值，使之从左向右的颜色过渡是自然的
+	for (x = xs; x <= xe; x++)
+	{
+		COLORREF clr = RGB(min(r, 255), min(g, 255), min(b, 255));
+
+		pDC->SetPixel(x, y, clr);//绘制扫描线
+		//扫描线的颜色变化
+		r += dr_x;
+		g += dg_x;
+		b += db_x;
+	}
+
+	dx_start += slope_start;
+	dx_end += slope_end;
+
+	dr_start += slope_start_r;
+	dg_start += slope_start_g;
+	db_start += slope_start_b;
+	dr_end += slope_end_r;
+	dg_end += slope_end_g;
+	db_end += slope_end_b;
+		}										
+</code></pre>									
 												<p>4、调用上述函数。改写View.cpp中的OnDraw()，绘制三角形轮廓，对顶点填充不同颜色，调用函数进行Gouraud shading渲染。</p>
+
+<pre><code>
+void CMFCApplication12View::OnDraw(CDC* pDC)
+{
+	CMFCApplication12Doc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	
+	CPen MyPen, *OldPen;
+	MyPen.CreatePen(PS_DASH, 0, RGB(0, 0, 255));
+	OldPen = pDC->SelectObject(&MyPen);
+
+	CBrush MyBrush, *OldBrush;
+	MyBrush.CreateSolidBrush(RGB(0, 0, 255));
+	OldBrush = pDC->SelectObject(&MyBrush);
+	//原始图像
+	CPoint pt0[3] = { CPoint(100,100),CPoint(400,100), CPoint(350,400) };
+	pDC->Polygon(pt0, 3);
+
+	CPoint pt2[3] = { CPoint(500,100),CPoint(800,100), CPoint(750,400) };
+	pDC->Polygon(pt2, 3);
+
+	COLORREF color[3] = { pDC->GetPixel(pt2[0].x, pt2[0].y), 16646660, 16646000 };
+
+	GouraudShading(pt2, color, pDC);
+
+	//清除  
+	pDC->SelectObject(OldPen);
+	MyPen.DeleteObject();
+	pDC->SelectObject(OldBrush);
+	MyBrush.DeleteObject();
+}
+</code><pre>
+
 												<p>5、调试。对窗口大小、三角形大小以及各顶点颜色等因素进行调试，以达到最佳效果。</p>
 											
 												<img src="images/2.jpg" width="500px" height="270px" />
