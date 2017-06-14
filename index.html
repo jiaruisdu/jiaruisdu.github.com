@@ -75,28 +75,147 @@
 								<div class="features">
 									<article>
 									
-										<div class="inner">
-											<h4>任务一：行走的小人</h4>
-											<p>巴拉巴拉1</p>
-											<video width="500px" height="500px" autoplay controls loop muted>
-												<source src="1.wmv" type="video/wmv" />
-								
-											</video>	
-										</div>
+										
+											<h4>任务一：行走的小人（OpenGL实现）</h4>
+											
+												<p>实验完成中遇到的问题和解决办法：</p>
+												<p>1、选定腰部节点为根节点。这样可以使小人的上半身和下半身按照相同的运动函数进行移动。</p>
+												<p>2、绘制立方体和圆柱体。小人的躯干采用长方体实现，而四肢采用圆柱体，不仅可以良好的区分两部分，更符合人体的圆柱形手臂摆动规律。</p>
+												<p>3、移动函数的构造。因为小人是有大臂和小臂的，在大臂摆动的同时，小臂要实时更新肘关节位置以保证手臂不散架，并且两个臂的摆动频率应相同，而腿部的运动也具有相同的特点。</p>
+												<p>4、整体的平移。为了让小人走起来，在函数实现时，应先移动坐标轴（矩阵点）然后再绘制身体各部分，四肢的移动也应在整体前进的函数之后实现。</p>
+												<p>5、调试。对视角的选定、窗口大小、小人运动方向以及速度等因素，应不断调试以达到最佳效果。</p>
+											
+												<img src="images/1.gif" width="322px" height="337px" />
+											
+										
 									</article>
 									<article>
 										
-										<div class="inner">
-											<h4>任务二：</h4>
-											<p>巴拉巴拉2</p>
-										</div>
+										<h4>任务二：1° 光线追踪（OpenGL实现）</h4>
+											
+												<p>实验操作步骤：</p>
+												<p>1、学会使用OpenGL库中的光线追踪函数。</p>
+												<p>2、设置环境光，漫反射光，镜面光以及反射光指数。</p>
+												<p>3、设置灯源位置和光源散布角度。</p>
+												<p>4、调试。对视角的选定、窗口大小、大小和颜色等因素，应不断调试以达到最佳效果。</p>
+												
+											
+										<img src="images/1.jpg" width="502px" height="540px" />
+										
+										<h4>2° Gouraud shading的代码实现（MFC实现）</h4>
+											
+												<p>实验完成中遇到的问题和解决办法：</p>
+												<p>1、初始化。设置不同的位置和RPG值的斜率参数。</p>
+												<p>2、判断三角形顶点位置。获取最左上角三角形顶点位置，并按照从宽到窄的方向绘制扫描线。</p>
+												<p>3、绘制扫描线。对三个定点的位置和RPG值进行纵向插值，每次的纵向插值过程中再进行横向插值，使颜色过渡自然。</p>
+												<p>4、调用上述函数。改写View.cpp中的OnDraw()，绘制三角形轮廓，对顶点填充不同颜色，调用函数进行Gouraud shading渲染。</p>
+												<p>5、调试。对窗口大小、三角形大小以及各顶点颜色等因素进行调试，以达到最佳效果。</p>
+											
+												<img src="images/2.jpg" width="949px" height="509px" />
+										
 									</article>
 									<article>
 										
-										<div class="inner">
-											<h4>任务三：</h4>
-											<p>巴拉巴拉3</p>
-										</div>
+										
+											<h4>任务三：Final Project</h4>
+											
+												<p>1、实验要求不使用自带的光线追踪函数，因此我自己写了一些基本的ray-tracing方法，并利用这些方法对简单物体进行光线追踪</p>
+<pre><code>
+												
+//L 入射光,R 反射光,N 法向量,V 视点方向，H L和V的角平分线
+Point L,R,N,V,H,I;
+L = (info.intersection_point - ray).normal();
+N = (info.norm).normal();
+R = (Point::reflection(L,N)).normal();
+V = (info.start - info.intersection_point).normal();
+I = intensity;
+
+if (!environment_light_only)
+	//color = color + Color(suc_mul(I,mod->material->ka)); 
+//else
+color = color + Color(suc_mul(Settings::surrounding_light,mod->material->ka)) 
+	+ Color(suc_mul(I,mod->material->ks)*pow(dot(R,V),mod->material->n)) 
+	+ Color(suc_mul(I,mod->material->kd)*dot(-1*L,N));
+else
+	color = color +Color(suc_mul(Settings::surrounding_light,mod->material->ka));
+
+</code></pre>
+											
+												<p>2、根据上一次做简单ray-tracing的经验，我将上一个任务的光线计算方法运用在这一次实验中，具体方法可见上一个实验。</p>
+												
+												<p>3、构造场景。在场景中我们画出地板，左侧墙壁，并在地板上绘制出一些不同大小和颜色的小球与长方体，然后利用ray-tracing和shading方法对他们进行再绘制。
+<pre><code>
+/***   生成红色长方体   ***/
+Model* arectangle = new Model();	//新建矩形模型
+Material * arectangle_mat = new Material(0,0,Point(0,0,0),Point(0,0,0));	//矩形材质
+General_model * arectangle_geo = new General_model();
+arectangle_mat->inital(Point(0.1,0.1,0.1),Point(0,0.3,0.4),Point(0.2,0.1,0.5),3);	//初始化
+//添加矩形的8个顶点
+arectangle_geo->add_vertex(Point(0,13000,0));
+arectangle_geo->add_vertex(Point(3000,13000,0));
+arectangle_geo->add_vertex(Point(3000,16000,0));
+arectangle_geo->add_vertex(Point(0,16000,0));
+arectangle_geo->add_vertex(Point(0,13000,3000));
+arectangle_geo->add_vertex(Point(3000,13000,3000));
+arectangle_geo->add_vertex(Point(3000,16000,3000));
+arectangle_geo->add_vertex(Point(0,16000,3000));
+//根据顶点添加表面
+arectangle_geo->add_face(0,1,2);
+arectangle_geo->add_face(0,2,3);
+arectangle_geo->add_face(0,1,5);
+arectangle_geo->add_face(0,5,4);
+arectangle_geo->add_face(1,2,6);
+arectangle_geo->add_face(1,6,5);
+arectangle_geo->add_face(4,5,6);
+arectangle_geo->add_face(4,6,7);
+//构建几何形状
+arectangle->add_geometry(arectangle_geo);
+//构造表面材质
+arectangle->add_material(arectangle_mat);
+//初始化
+arectangle->geometry->inital();
+//在屏幕中加载
+scene->add_model(arectangle);
+</code></pre>
+													
+<pre><code>
+//进行ray-tracing
+raySource->inital(Point(12000,0,8000));
+//初始化相机位置
+camera->initalize(Point(15000,0,2500),Point(-1,2,0),Point(0,0,1),Settings::scLen,Settings::scWid,100);
+</code></pre>
+													
+<pre><code>
+//对camera进行设置
+camera->pixmap = pixmap;
+camera->scene = scene;
+camera->screen = screen;	
+</code></pre>
+													
+<pre><code>
+//对场景进行ray-tracing
+scene->add_raySource(raySource);
+scene->add_illumin(illumin);
+camera->castLight();
+camera->pixmap->show();
+</code></pre>
+												</p>	
+												
+												<p>4、实验结果展示：
+													fig.1. 场景中的所有元素都没有进行ray-tracing：
+													<img src="images/all no ray tracing.png" width="949px" height="509px" />
+													
+													fig.2. 没有对场景中的地板进行ray-tracing:
+													<img src="images/ray tracing without ground.png" width="949px" height="509px" />
+													
+													fig.3. 对场景中所有元素进行ray-tracing:
+													<img src="images/final ray tracing.png" width="949px" height="509px" />
+												</p>
+													
+												
+												
+										
+										
 									</article>
 								</div>
 							</div>
