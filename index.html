@@ -116,7 +116,7 @@
 									</article>
 									<article>
 										
-										<div class="inner">
+										
 											<h4>任务三：Final Project</h4>
 											
 												<p>1、实验要求不使用自带的光线追踪函数，因此我自己写了一些基本的ray-tracing方法，并利用这些方法对简单物体进行光线追踪</p>
@@ -178,12 +178,12 @@
 														scene->add_model(arectangle);
 													</code></pre>
 													
-													<pre><code>
-														//进行ray-tracing
-														raySource->inital(Point(12000,0,8000));
-														//初始化相机位置
-														camera->initalize(Point(15000,0,2500),Point(-1,2,0),Point(0,0,1),Settings::scLen,Settings::scWid,100);
-													</code></pre>
+													<pre>
+//进行ray-tracing
+raySource->inital(Point(12000,0,8000));
+//初始化相机位置
+camera->initalize(Point(15000,0,2500),Point(-1,2,0),Point(0,0,1),Settings::scLen,Settings::scWid,100);
+													</pre>
 													
 													<pre>
 //对camera进行设置
@@ -202,7 +202,7 @@ camera->pixmap->show();
 												</p>	
 												
 										
-										</div>
+										
 									</article>
 								</div>
 							</div>
