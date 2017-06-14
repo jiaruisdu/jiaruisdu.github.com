@@ -96,10 +96,52 @@
 												<p>实验操作步骤：</p>
 												<p>1、学会使用OpenGL库中的光线追踪函数。</p>
 												<p>2、设置环境光，漫反射光，镜面光以及反射光指数。</p>
+<pre><code>
+GLfloat mat_ambient[] = { 0.2f,0.2f,0.2f,1.0f };//环境光
+GLfloat mat_diffuse[] = { 0.8f,0.8f,0.8f,1.0f };//漫反射
+GLfloat mat_specular[] = { 1.0f,1.0f,1.0f,1.0f };//镜面光
+GLfloat mat_shininess[] = { 50.0f };//镜面反射指数
+
+glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);//设置环境光源
+glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);//设置漫反射光源
+glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);//设置镜面反射光源
+glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);//设置镜面反射指数
+</code></pre>
 												<p>3、设置灯源位置和光源散布角度。</p>
+										
+<pre><code>
+glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);//设置0号灯的漫反射光源
+glLightfv(GL_LIGHT0, GL_POSITION, light0_position);//设置0号灯的光源位置（上方光源）
+
+glLightfv(GL_LIGHT1, GL_AMBIENT, light1_ambient);//设置1号灯的环境光源
+glLightfv(GL_LIGHT1, GL_SPECULAR, light1_specular);//设置1号灯的镜面反射光
+glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);//设置1号灯的漫反射光
+glLightfv(GL_LIGHT1, GL_POSITION, light0_position);//重置0号灯位置（下方）
+
+
+glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0);//定义光源最大散布角度为30，默认是180
+glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction);//指定光照方向
+glEnable(GL_LIGHTING);//打开灯光
+</code></pre>
+										
 												<p>4、调试。对视角的选定、窗口大小、大小和颜色等因素，应不断调试以达到最佳效果。</p>
+<pre><code>
+glViewport(0, 0, w, h);//把视口设置为窗口大小
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+
+if (w <= h)
+	glOrtho(-5.5f, 5.5f, -5.5f*h / w, 5.5f*h / w, -10.0f, 10.0f);//正射投影，物体大小不变
+else
+	glOrtho(-5.5f*w / h, 5.5f*w / h, -5.5f, 5.5f, -10.0f, 10.0f);
+</code></pre>
+
+<pre><code>
+glutInitWindowPosition(100, 100);//设置窗口位置
+glutInitWindowSize(300, 300);//设置窗口大小
+</code></pre>										
 												
-											
+												<p>5、结果展示</p>		
 										<img src="images/1.jpg" width="502px" height="540px" />
 										
 										<h4>2° Gouraud shading的代码实现（MFC实现）</h4>
