@@ -117,8 +117,91 @@
 									<article>
 										
 										<div class="inner">
-											<h4>任务三：</h4>
-											<p>巴拉巴拉3</p>
+											<h4>任务三：Final Project</h4>
+											
+												<p>1、实验要求不使用自带的光线追踪函数，因此我自己写了一些基本的ray-tracing方法，并利用这些方法对简单物体进行光线追踪</p>
+												<pre><code>
+												
+													//L 入射光,R 反射光,N 法向量,V 视点方向，H L和V的角平分线
+													Point L,R,N,V,H,I;
+													L = (info.intersection_point - ray).normal();
+													N = (info.norm).normal();
+													R = (Point::reflection(L,N)).normal();
+													V = (info.start - info.intersection_point).normal();
+													I = intensity;
+													
+													if (!environment_light_only)
+														//color = color + Color(suc_mul(I,mod->material->ka)); 
+													//else
+													color = color + Color(suc_mul(Settings::surrounding_light,mod->material->ka)) 
+														+ Color(suc_mul(I,mod->material->ks)*pow(dot(R,V),mod->material->n)) 
+														+ Color(suc_mul(I,mod->material->kd)*dot(-1*L,N));
+													else
+														color = color +Color(suc_mul(Settings::surrounding_light,mod->material->ka));
+														
+												</code></pre>
+											
+												<p>2、根据上一次做简单ray-tracing的经验，我将上一个任务的光线计算方法运用在这一次实验中，具体方法可见上一个实验。</p>
+												
+												<p>3、构造场景。在场景中我们画出地板，左侧墙壁，并在地板上绘制出一些不同大小和颜色的小球与长方体，然后利用ray-tracing和shading方法对他们进行再绘制。
+													<pre><code>
+														/***   生成红色长方体   ***/
+														Model* arectangle = new Model();	//新建矩形模型
+														Material * arectangle_mat = new Material(0,0,Point(0,0,0),Point(0,0,0));	//矩形材质
+														General_model * arectangle_geo = new General_model();
+														arectangle_mat->inital(Point(0.1,0.1,0.1),Point(0,0.3,0.4),Point(0.2,0.1,0.5),3);	//初始化
+														//添加矩形的8个顶点
+														arectangle_geo->add_vertex(Point(0,13000,0));
+														arectangle_geo->add_vertex(Point(3000,13000,0));
+														arectangle_geo->add_vertex(Point(3000,16000,0));
+														arectangle_geo->add_vertex(Point(0,16000,0));
+														arectangle_geo->add_vertex(Point(0,13000,3000));
+														arectangle_geo->add_vertex(Point(3000,13000,3000));
+														arectangle_geo->add_vertex(Point(3000,16000,3000));
+														arectangle_geo->add_vertex(Point(0,16000,3000));
+														//根据顶点添加表面
+														arectangle_geo->add_face(0,1,2);
+														arectangle_geo->add_face(0,2,3);
+														arectangle_geo->add_face(0,1,5);
+														arectangle_geo->add_face(0,5,4);
+														arectangle_geo->add_face(1,2,6);
+														arectangle_geo->add_face(1,6,5);
+														arectangle_geo->add_face(4,5,6);
+														arectangle_geo->add_face(4,6,7);
+														//构建几何形状
+														arectangle->add_geometry(arectangle_geo);
+														//构造表面材质
+														arectangle->add_material(arectangle_mat);
+														//初始化
+														arectangle->geometry->inital();
+														//在屏幕中加载
+														scene->add_model(arectangle);
+													</code></pre>
+													
+													<pre><code>
+														//进行ray-tracing
+														raySource->inital(Point(12000,0,8000));
+														//初始化相机位置
+														camera->initalize(Point(15000,0,2500),Point(-1,2,0),Point(0,0,1),Settings::scLen,Settings::scWid,100);
+													</code></pre>
+													
+													<pre><code>
+														//对camera进行设置
+														camera->pixmap = pixmap;
+														camera->scene = scene;
+														camera->screen = screen;	
+													</code></pre>
+													
+													<pre><code>
+														//对场景进行ray-tracing
+														scene->add_raySource(raySource);
+														scene->add_illumin(illumin);
+														camera->castLight();
+														camera->pixmap->show();
+													</code></pre>
+												</p>	
+												
+										
 										</div>
 									</article>
 								</div>
